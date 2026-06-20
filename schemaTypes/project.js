@@ -66,49 +66,77 @@ export default {
       ]
     },
     {
-      name: 'images',
-      title: 'Images',
+      name: 'media',
+      title: 'Media',
+      description: 'Photos and videos in display order. Drag to reorder.',
       type: 'array',
-      of: [{ type: 'image', options: { hotspot: true } }]
-    },
-    {
-      name: 'videos',
-      title: 'Videos',
-      type: 'array',
-      validation: Rule => Rule.max(3),
       of: [
         {
           type: 'object',
-          title: 'Video',
+          title: 'Media Item',
           fields: [
             {
-              name: 'videoType',
+              name: 'mediaType',
               title: 'Type',
               type: 'string',
               options: {
                 list: [
-                  { title: 'URL (YouTube / Vimeo)', value: 'url' },
-                  { title: 'Upload', value: 'upload' }
+                  { title: 'Image', value: 'image' },
+                  { title: 'Video URL (YouTube / Vimeo)', value: 'videoUrl' },
+                  { title: 'Video Upload', value: 'videoUpload' }
                 ],
                 layout: 'radio'
-              }
+              },
+              validation: Rule => Rule.required()
+            },
+            {
+              name: 'image',
+              title: 'Image',
+              type: 'image',
+              options: { hotspot: true },
+              hidden: ({ parent }) => parent?.mediaType !== 'image'
             },
             {
               name: 'url',
               title: 'Video URL',
               type: 'url',
-              hidden: ({ parent }) => parent?.videoType !== 'url'
+              hidden: ({ parent }) => parent?.mediaType !== 'videoUrl'
             },
             {
               name: 'file',
               title: 'Video File',
               type: 'file',
               options: { accept: 'video/*' },
-              hidden: ({ parent }) => parent?.videoType !== 'upload'
+              hidden: ({ parent }) => parent?.mediaType !== 'videoUpload'
+            },
+            {
+              name: 'portrait',
+              title: 'Portrait orientation? (9:16)',
+              type: 'boolean',
+              description: 'Enable for vertical/portrait videos',
+              hidden: ({ parent }) => parent?.mediaType === 'image',
+              initialValue: false
+            },
+            {
+              name: 'caption',
+              title: 'Caption (optional)',
+              type: 'string'
             }
           ],
           preview: {
-            select: { title: 'url', subtitle: 'videoType' }
+            select: {
+              mediaType: 'mediaType',
+              image: 'image',
+              url: 'url',
+              caption: 'caption'
+            },
+            prepare({ mediaType, image, url, caption }) {
+              return {
+                title: caption || url || mediaType,
+                subtitle: mediaType,
+                media: image
+              }
+            }
           }
         }
       ]
